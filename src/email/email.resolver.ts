@@ -10,30 +10,51 @@ import {
 } from '@nestjs/graphql';
 import { EmailFiltersArgs, UserEmail } from './email.types';
 import { User } from '../user/user.types';
+import { Equal, FindOptionsWhere, Repository } from 'typeorm';
+import { EmailEntity } from './email.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { UserService } from '../user/user.service';
 
 @Resolver(() => UserEmail)
 export class EmailResolver {
+  constructor(
+    private readonly _service: UserService,
+    @InjectRepository(EmailEntity)
+    private readonly emailRepository: Repository<EmailEntity>,
+  ) {}
+
   @Query(() => UserEmail, { name: 'email' })
   getEmail(@Args({ name: 'emailId', type: () => ID }) emailId: string) {
-    // TODO IMPLEMENTATION
-    // Récupérer une adresse email par rapport à son identifiant
-    throw new NotImplementedException();
+    const where: FindOptionsWhere<UserEmail> = {
+      id: Equal(emailId),
+    };
+
+    return this.emailRepository.findOne({
+      where,
+      order: { address: 'asc' },
+    });
   }
 
   @Query(() => [UserEmail], { name: 'emailsList' })
   async getEmails(@Args() filters: EmailFiltersArgs): Promise<UserEmail[]> {
-    // TODO IMPLEMENTATION
-    // Récupérer une liste d'e-mails correspondants à des filtres
+    const where: FindOptionsWhere<EmailEntity>[] = [];
 
-    // Je pense qu'on pourrait essayer de refactoriser pour réutiliser
-    // la même chose que dans UserResolver pour récupérer les emails
-    throw new NotImplementedException();
+    if (filters.address) {
+      if (filters.address.equal) {
+        where.push({
+          address: Equal(filters.address.equal),
+        });
+      }
+    }
+
+    return this.emailRepository.find({
+      where,
+      order: { address: 'asc' },
+    });
   }
 
   @ResolveField(() => User, { name: 'user' })
   async getUser(@Parent() parent: UserEmail): Promise<User> {
-    // TODO IMPLEMENTATION
-    // Récupérer l'utilisateur à qui appartient l'email
-    throw new NotImplementedException();
+    return this._service.get(parent.userId);
   }
 }
