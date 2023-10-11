@@ -14,6 +14,7 @@ import { EmailEntity } from '../email/email.entity';
 import { UserId } from './user.interfaces';
 import { UserService } from './user.service';
 import { AddUser, User, UserIdArgs } from './user.types';
+import { UsePipes, ValidationPipe } from '@nestjs/common';
 
 @Resolver(() => User)
 export class UserResolver {
@@ -29,6 +30,7 @@ export class UserResolver {
   }
 
   @Mutation(() => ID)
+  @UsePipes(new ValidationPipe({ transform: true }))
   addUser(@Args() user: AddUser): Promise<UserId> {
     return this._service.add(user);
   }

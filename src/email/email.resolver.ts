@@ -1,5 +1,5 @@
-import { NotImplementedException } from '@nestjs/common';
-import { Mutation } from '@nestjs/graphql';
+import { NotImplementedException, Post } from '@nestjs/common';
+import { Int, Mutation } from '@nestjs/graphql';
 import {
   Args,
   ID,
@@ -8,12 +8,14 @@ import {
   ResolveField,
   Resolver,
 } from '@nestjs/graphql';
-import { EmailFiltersArgs, UserEmail } from './email.types';
+import { AddEmail, EmailFiltersArgs, UserEmail } from './email.types';
 import { User } from '../user/user.types';
-import { Equal, FindOptionsWhere, Repository } from 'typeorm';
+import { DeleteResult, Equal, FindOptionsWhere, Repository } from 'typeorm';
 import { EmailEntity } from './email.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserService } from '../user/user.service';
+import { EmailId } from './email.interfaces';
+import { GraphQLScalarType } from 'graphql';
 
 @Resolver(() => UserEmail)
 export class EmailResolver {
@@ -33,6 +35,18 @@ export class EmailResolver {
       where,
       order: { address: 'asc' },
     });
+  }
+
+  @Mutation(() => ID)
+  async addEmailToUser(@Args() email: AddEmail): Promise<EmailId> {
+    const addedEmail = await this.emailRepository.insert(email);
+    const emailId = addedEmail.identifiers[0].id;
+    return emailId;
+  }
+
+  @Mutation(() => Int)
+  async removeEmailToUser(@Args('emailId') emailId: string) {
+    return (await this.emailRepository.delete(emailId)).affected;
   }
 
   @Query(() => [UserEmail], { name: 'emailsList' })

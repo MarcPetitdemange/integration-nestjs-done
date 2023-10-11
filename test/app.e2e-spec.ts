@@ -264,4 +264,49 @@ describe('Tests e2e', () => {
       });
     });
   });
+
+
+  describe('[Mutation] Ajout de mails', () => {
+    it(`[13] Devrait ajouter une adresse email à l'utilisateur`, () => {
+      return request(app.getHttpServer())
+        .post('/graphql')
+        .send({
+          query: `mutation {addEmailToUser(userId: "${knownUserId}", address: "${email1.address}")}`,
+        })
+        .expect(200)
+        .expect((res) => {
+          expect(res.body.data.addEmailToUser).toBeDefined();
+        });
+    });
+
+    it(`[14] Ne Devrait pas ajouter une adresse email erronée à l'utilisateur`, () => {
+      return request(app.getHttpServer())
+        .post('/graphql')
+        .send({
+          query: `mutation {addEmailToUser(userId: "${knownUserId}", address: "testpar.com")}`,
+        })
+        .expect(200)
+        .expect((res) => {
+          console.log(res.body.errors);
+          expect(
+            res.body.errors?.[0].extensions?.originalError?.message[0]
+          ).toBe("L'adresse envoyée n'est pas une adresse email valide");
+        });
+    });
+  });
+
+  describe('[Mutation] Suppression de mails', () => {
+    it(`[15] Devrait supprimer une adresse email à l'utilisateur`, async () => {
+      await request(app.getHttpServer())
+        .post('/graphql')
+        .send({
+          query: `mutation {removeEmailToUser(emailId: "${email1.id}")}`,
+        })
+        .expect(200)
+        .expect((res) => {
+          console.log(res.body);
+          expect(res.body.data.removeEmailToUser).toBeDefined();
+        });
+    });
+  });
 });

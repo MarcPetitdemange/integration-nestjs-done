@@ -1,5 +1,5 @@
 import { ArgsType, Field, ID, InputType, ObjectType } from '@nestjs/graphql';
-import { IsOptional } from 'class-validator';
+import { IsEmail, IsOptional } from 'class-validator';
 import { Maybe } from 'graphql/jsutils/Maybe';
 import { IEmail, IEmailFilters } from './email.interfaces';
 
@@ -13,6 +13,19 @@ export class UserEmail implements IEmail {
 
   userId: string;
 }
+
+@InputType()
+@ArgsType()
+export class AddEmail {
+  
+  @IsEmail({}, {message: "L'adresse envoyée n'est pas une adresse email valide"})
+  @Field(() => String)
+  address: string;
+  
+  @Field(() => String)
+  userId: string;
+}
+
 
 @InputType()
 export class StringFilters {
