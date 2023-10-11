@@ -287,7 +287,6 @@ describe('Tests e2e', () => {
         })
         .expect(200)
         .expect((res) => {
-          console.log(res.body.errors);
           expect(
             res.body.errors?.[0].extensions?.originalError?.message[0]
           ).toBe("L'adresse envoyée n'est pas une adresse email valide");
@@ -304,7 +303,6 @@ describe('Tests e2e', () => {
         })
         .expect(200)
         .expect((res) => {
-          console.log(res.body);
           expect(res.body.data.removeEmailToUser).toBeDefined();
         });
     });
